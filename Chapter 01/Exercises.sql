@@ -16,3 +16,34 @@ SELECT DISTINCT
   custid
  ,YEAR(orderdate) AS orderyear
 FROM Sales.Orders;
+
+--error
+SELECT
+  custid
+ ,orderid
+FROM Sales.Orders
+GROUP BY custid;
+
+--correct
+SELECT
+  custid
+ ,MAX(orderid)
+FROM Sales.Orders
+GROUP BY custid;
+
+--error
+SELECT
+  shipperid
+ ,SUM(freight) AS totalfreight
+FROM Sales.Orders
+WHERE freight > 20000
+GROUP BY shipperid;
+
+--correct
+SELECT
+  shipperid
+ ,SUM(freight) AS totalfreight
+FROM Sales.Orders
+GROUP BY shipperid
+HAVING SUM(freight) > 20000;
+
