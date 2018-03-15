@@ -68,3 +68,67 @@ SELECT
 FROM Sales.Orders
 WHERE orderdate >= '20070201'
 AND orderdate < '20070301';
+
+--sorting employees
+SELECT
+  empid
+ ,firstname
+ ,lastname
+ ,city
+ ,MONTH(birthdate) AS birthmonth
+FROM HR.Employees
+WHERE country = N'USA'
+AND region = N'WA'
+ORDER BY city;
+
+--reversed sorting (non-determinated)
+SELECT
+  empid
+ ,firstname
+ ,lastname
+ ,city
+ ,MONTH(birthdate) AS birthmonth
+FROM HR.Employees
+WHERE country = N'USA'
+AND region = N'WA'
+ORDER BY city DESC;
+
+--determinated sorting
+SELECT
+  empid
+ ,firstname
+ ,lastname
+ ,city
+ ,MONTH(birthdate) AS birthmonth
+FROM HR.Employees
+WHERE country = N'USA'
+AND region = N'WA'
+ORDER BY city, empid;
+
+--ordering by field not from select
+SELECT
+  empid
+ ,city
+FROM HR.Employees
+WHERE country = N'USA'
+AND region = N'WA'
+ORDER BY birthdate;
+
+--ordering error
+--SELECT DISTINCT city
+--FROM HR.Employees
+--WHERE country = N'USA' AND region = N'WA'
+--ORDER BY birthdate;
+
+--correct ordering
+SELECT DISTINCT
+  city
+FROM HR.Employees
+WHERE country = N'USA' AND region = N'WA'
+ORDER BY birthdate;
+
+--sorting nulls
+SELECT orderid, shippeddate
+FROM Sales.Orders
+WHERE custid = 20
+ORDER BY shippeddate;
