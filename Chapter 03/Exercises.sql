@@ -64,3 +64,45 @@ SELECT
 FROM Sales.Orders
 WHERE custid = 77
 ORDER BY shipperid, shippeddate DESC, orderid DESC;
+
+--top 5 products
+SELECT TOP(5)
+   productid
+  ,unitprice
+FROM Production.Products
+WHERE categoryid = 1
+ORDER BY unitprice DESC;
+
+--top 5 prices
+SELECT TOP(5) WITH TIES
+   productid
+  ,unitprice
+FROM Production.Products
+WHERE categoryid = 1
+ORDER BY unitprice DESC;
+
+--top 5
+SELECT TOP(5)
+   productid
+  ,unitprice
+FROM Production.Products
+WHERE categoryid = 1
+ORDER BY unitprice DESC, productid DESC;
+
+--first 5 products
+SELECT
+   productid
+  ,categoryid
+  ,unitprice
+FROM Production.Products
+ORDER BY unitprice, productid
+OFFSET 0 ROWS FETCH FIRST 5 ROWS ONLY;
+
+--next 5 rows
+SELECT
+   productid
+  ,categoryid
+  ,unitprice
+FROM Production.Products
+ORDER BY unitprice, productid
+OFFSET 5 ROWS FETCH FIRST 5 ROWS ONLY;
