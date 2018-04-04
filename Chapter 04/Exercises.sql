@@ -95,3 +95,29 @@ WHERE S.country = N'Japan';
 IF OBJECT_ID('Production.GetTopProducts', 'IF') IS NOT NULL
 DROP FUNCTION Production.GetTopProducts;
 GO
+
+--except
+SELECT
+    empid
+FROM Sales.Orders
+WHERE custid = 1
+
+EXCEPT
+
+SELECT
+    empid
+FROM Sales.Orders
+WHERE custid = 2;
+
+--intersect
+SELECT
+    empid
+FROM Sales.Orders
+WHERE custid = 1
+
+INTERSECT
+
+SELECT
+    empid
+FROM Sales.Orders
+WHERE custid = 2;
