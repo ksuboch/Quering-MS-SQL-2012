@@ -129,3 +129,51 @@ SELECT
     ,COUNT(*) AS numorders
 FROM Sales.Orders
 GROUP BY ROLLUP(shipcountry, shipregion, shipcity);
+
+--pivot
+WITH PivotData AS
+(
+    SELECT
+        custid,
+        shipperid,
+        freight
+    FROM Sales.Orders
+)
+SElECT
+    custid,
+    [1],
+    [2],
+    [3]
+FROM PivotData
+PIVOT(SUM(freight) FOR shipperid IN ([1], [2], [3])) AS P;
+
+--unpivot
+IF OBJECT_ID('Sales.FreightTotals') IS NOT NULL
+DROP TABLE Sales.FreigtTotals;
+GO
+
+WITH PivotData AS
+(
+    SELECT
+        custid,
+        shipperid,
+        freight
+    FROM Sales.Orders
+)
+SElECT
+    *
+INTO Sales.FreigtTotals
+FROM PivotData
+PIVOT(SUM(freight) FOR shipperid IN ([1], [2], [3])) AS P;
+
+SELECT * FROM Sales.FreigtTotals;
+
+SELECT
+     custid
+    ,shipperid
+    ,freight
+FROM Sales.FreigtTotals
+UNPIVOT(freight FOR shipperid IN ([1], [2], [3])) AS U;
+
+IF OBJECT_ID('Sales.FreightTotals') IS NOT NULL
+DROP TABLE Sales.FreigtTotals;
