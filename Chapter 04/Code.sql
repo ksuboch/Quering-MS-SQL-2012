@@ -92,3 +92,205 @@ FROM Production.Suppliers AS S
             ON C.categoryid = P.categoryid)
     ON S.supplierid = P.supplierid
 WHERE S.country = N'Japan';
+
+--sub-query
+SELECT
+     productid
+    ,productname
+    ,unitprice
+FROM Production.Products
+WHERE unitprice = (SELECT MIN(unitprice)
+                    FROM Production.Products);
+
+--multi row subquery
+SELECT
+     productid
+    ,productname
+    ,unitprice
+FROM Production.Products
+WHERE supplierid IN
+    (SELECT supplierid
+     FROM Production.Suppliers
+     WHERE country = N'Japan');
+
+--corellated subquery
+SELECT
+     categoryid
+    ,productid
+    ,productname
+    ,unitprice
+FROM Production.Products AS P1
+WHERE unitprice = (SELECT MIN(unitprice)
+                   FROM Production.Products AS P2
+                   WHERE P2.categoryid = P1.categoryid);
+
+SELECT
+     custid
+    ,companyname
+FROM Sales.Customers AS C
+WHERE EXISTS
+(SELECT *
+ FROM Sales.Orders AS O
+ WHERE O.custid = C.custid
+    AND O.orderdate = '20070212');
+
+--table expression
+SELECT
+     categoryid
+    ,productid
+    ,productname
+    ,unitprice
+FROM (SELECT
+         ROW_NUMBER() OVER(PARTITION BY categoryid
+                            ORDER BY unitprice, productid) AS rownum
+        ,categoryid
+        ,productid
+        ,productname
+        ,unitprice
+      FROM Production.Products) AS D
+WHERE rownum <= 2;
+
+--common table expression
+WITH C AS
+(SELECT
+    ROW_NUMBER() OVER(PARTITION BY categoryid
+                        ORDER BY unitprice, productid) AS rownum
+    ,categoryid
+    ,productid
+    ,productname
+    ,unitprice
+FROM Production.Products)
+SELECT
+     categoryid
+    ,productid
+    ,productname
+    ,unitprice
+FROM C
+WHERE rownum <= 2;
+
+--recoursive cte
+WITH EmpsCTE AS
+(SELECT
+     empid
+    ,mgrid
+    ,firstname
+    ,lastname
+    ,0 AS distance
+FROM HR.Employees
+WHERE empid = 9
+
+UNION ALL
+
+SELECT
+     M.empid
+    ,M.mgrid
+    ,M.firstname
+    ,M.lastname
+    ,S.distance + 1 AS distance
+FROM EmpsCTE AS S
+    JOIN HR.Employees AS M
+        ON M.empid = S.mgrid)
+SELECT
+     empid
+    ,mgrid
+    ,firstname
+    ,lastname
+    ,distance
+FROM EmpsCTE;
+
+--view
+IF OBJECT_ID('Sales.RankedProducts', 'V') IS NOT NULL
+DROP VIEW Sales.RankedProducts;
+GO
+
+CREATE VIEW Sales.RankedProducts
+AS
+SELECT
+    ROW_NUMBER() OVER(PARTITION BY categoryid
+                        ORDER BY unitprice, productid) AS rownum
+    ,categoryid
+    ,productid
+    ,productname
+    ,unitprice
+FROM Production.Products;
+GO
+
+SELECT
+     categoryid
+    ,productid
+    ,productname
+    ,unitprice
+FROM Sales.RankedProducts
+WHERE rownum <= 2;
+
+--table function
+IF OBJECT_ID('HR.GetManagers', 'IF') IS NOT NULL
+DROP FUNCTION HR.GetManagers;
+GO
+
+CREATE FUNCTION HR.GetManagers(@empid AS INT) RETURNS TABLE
+AS
+RETURN
+    WITH EmpsCTE AS
+    (SELECT
+        empid
+        ,mgrid
+        ,firstname
+        ,lastname
+        ,0 AS distance
+    FROM HR.Employees
+    WHERE empid = @empid
+
+    UNION ALL
+
+    SELECT
+        M.empid
+        ,M.mgrid
+        ,M.firstname
+        ,M.lastname
+        ,S.distance + 1 AS distance
+    FROM EmpsCTE AS S
+        JOIN HR.Employees AS M
+            ON M.empid = S.mgrid)
+    SELECT
+        empid
+        ,mgrid
+        ,firstname
+        ,lastname
+        ,distance
+    FROM EmpsCTE;
+GO
+
+SELECT * FROM HR.GetManagers(9) AS M;
+
+--cross apply
+SELECT
+     S.supplierid
+    ,S.companyname AS supplier
+    ,A.*
+FROM Production.Suppliers AS S
+    CROSS APPLY (SELECT
+                     productid
+                    ,productname
+                    ,unitprice
+                 FROM Production.Products AS P
+                 WHERE P.supplierid = S.supplierid
+                 ORDER BY unitprice, productid
+                 OFFSET 0 ROWS FETCH NEXT 2 ROWS ONLY) AS A
+WHERE S.country = N'Japan';
+
+--outer apply
+SELECT
+     S.supplierid
+    ,S.companyname AS supplier
+    ,A.*
+FROM Production.Suppliers AS S
+    OUTER APPLY (SELECT
+                     productid
+                    ,productname
+                    ,unitprice
+                 FROM Production.Products AS P
+                 WHERE P.supplierid = S.supplierid
+                 ORDER BY unitprice, productid
+                 OFFSET 0 ROWS FETCH NEXT 2 ROWS ONLY) AS A
+WHERE S.country = N'Japan';
