@@ -294,3 +294,59 @@ FROM Production.Suppliers AS S
                  ORDER BY unitprice, productid
                  OFFSET 0 ROWS FETCH NEXT 2 ROWS ONLY) AS A
 WHERE S.country = N'Japan';
+
+--union
+SELECT
+     country
+    ,region
+    ,city
+FROM HR.Employees
+UNION
+SELECT
+     country
+    ,region
+    ,city
+FROM Sales.Customers;
+
+--union all
+SELECT
+     country
+    ,region
+    ,city
+FROM HR.Employees
+UNION ALL
+SELECT
+     country
+    ,region
+    ,city
+FROM Sales.Customers;
+
+--intersect
+SELECT
+     country
+    ,region
+    ,city
+FROM HR.Employees
+INTERSECT
+SELECT
+     country
+    ,region
+    ,city
+FROM Sales.Customers;
+
+--except
+SELECT
+     country
+    ,region
+    ,city
+FROM HR.Employees
+EXCEPT
+SELECT
+     country
+    ,region
+    ,city
+FROM Sales.Customers;
+
+DELETE FROM Production.Suppliers WHERE supplierid > 29;
+IF OBJECT_ID('Sales.RankedProducts', 'V') IS NOT NULL DROP VIEW Sales.RankedProducts;
+IF OBJECT_ID('HR.GetManagers', 'IF') IS NOT NULL DROP FUNCTION HR.GetManagers;
