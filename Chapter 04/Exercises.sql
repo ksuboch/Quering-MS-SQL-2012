@@ -121,3 +121,29 @@ SELECT
     empid
 FROM Sales.Orders
 WHERE custid = 2;
+
+--task
+SELECT
+    E.empid
+FROM HR.Employees AS E
+WHERE NOT EXISTS(SELECT 1
+                 FROM Sales.Orders AS O
+                 WHERE
+                    O.empid = E.empid
+                    AND O.orderdate = '20080212');
+
+SELECT
+    E.empid
+FROM HR.Employees AS E
+    FULL OUTER JOIN Sales.Orders AS O
+        ON E.empid = O.empid AND O.orderdate = '20080212'
+WHERE O.orderid IS NULL;
+
+SELECT
+    E.empid
+FROM HR.Employees AS E
+EXCEPT
+SELECT
+    O.empid
+FROM Sales.Orders AS O
+WHERE O.orderdate = '20080212';
