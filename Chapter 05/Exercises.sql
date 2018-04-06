@@ -29,3 +29,25 @@ FROM Sales.Orders AS O
 WHERE C.country = N'Spain'
 GROUP BY GROUPING SETS ( (C.custid, C.city) , ())
 ORDER BY GROUPING(C.custid);
+
+WITH OrderCTE AS
+(
+    SELECT
+         YEAR(orderdate) AS orderyear
+        ,shippeddate
+        ,shipperid
+    FROM Sales.Orders
+)
+SELECT orderyear, [1], [2], [3]
+FROM OrderCTE PIVOT( MAX(shippeddate) FOR shipperid IN ([1],[2],[3])) AS P;
+
+WITH PivotData AS
+(
+    SELECT
+        custid
+        ,shipperid
+        ,orderid
+    FROM Sales.Orders
+)
+SELECT custid, [1], [2], [3]
+FROM PivotData PIVOT( COUNT(orderid) FOR  shipperid IN ([1],[2],[3])) AS P;
