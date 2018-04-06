@@ -177,3 +177,81 @@ UNPIVOT(freight FOR shipperid IN ([1], [2], [3])) AS U;
 
 IF OBJECT_ID('Sales.FreightTotals') IS NOT NULL
 DROP TABLE Sales.FreigtTotals;
+
+--window functions
+SELECT
+     custid
+    ,orderid
+    ,val
+    ,SUM(val) OVER (PARTITION BY custid) AS custtotal
+    ,SUM(val) OVER () AS grandtotal
+FROM Sales.OrderValues;
+
+SELECT
+     custid
+    ,orderid
+    ,val
+    ,CAST(100.0 * val / SUM(val) OVER (PARTITION BY custid) AS NUMERIC(5, 2)) AS pctcust
+    ,CAST(100.0 * val / SUM(val) OVER ()                    AS NUMERIC(5, 2)) AS pcttotal
+FROM Sales.OrderValues;
+
+--bounds
+SELECT
+     custid
+    ,orderid
+    ,orderdate
+    ,val
+    ,SUM(val) OVER (PARTITION BY custid
+                    ORDER BY orderdate, orderid
+                    ROWS BETWEEN UNBOUNDED PRECEDING
+                        AND CURRENT ROW) AS runtotal
+FROM Sales.OrderValues;
+
+--range window functions
+SELECT
+     custid
+    ,orderid
+    ,val
+    ,ROW_NUMBER() OVER (ORDER BY val) AS rownum
+    ,RANK()       OVER (ORDER BY val) AS rnk
+    ,DENSE_RANK() OVER (ORDER BY val) AS densernk
+    ,NTILE(100)   OVER (ORDER BY val) AS ntile100
+FROM Sales.OrderValues;
+
+--displacement functions
+SELECT
+     custid
+    ,orderid
+    ,orderdate
+    ,val
+    ,LAG(val)  OVER (PARTITION BY custid
+                     ORDER BY orderdate, orderid) AS prev_val
+    ,LEAD(val) OVER (PARTITION BY custid
+                     ORDER BY orderdate, orderid) AS next_val
+FROM Sales.OrderValues;
+
+SELECT
+     custid
+    ,orderid
+    ,orderdate
+    ,val
+    ,LAG(val, 1, 0)  OVER (PARTITION BY custid
+                            ORDER BY orderdate, orderid) AS prev_val
+    ,LEAD(val, 1, 0) OVER (PARTITION BY custid
+                            ORDER BY orderdate, orderid) AS next_val
+FROM Sales.OrderValues;
+
+SELECT
+     custid
+    ,orderid
+    ,orderdate
+    ,val
+    ,FIRST_VALUE(val) OVER (PARTITION BY custid
+                            ORDER BY orderdate, orderid
+                            ROWS BETWEEN UNBOUNDED PRECEDING
+                                AND CURRENT ROW) AS first_value
+    ,LAST_VALUE(val) OVER (PARTITION BY custid
+                            ORDER BY orderdate, orderid
+                            ROWS BETWEEN CURRENT ROW
+                                AND UNBOUNDED FOLLOWING) AS last_value
+FROM Sales.OrderValues;
