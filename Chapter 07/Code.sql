@@ -86,3 +86,14 @@ FROM OPENXML(@DocHandle, '/CustomersOrders/Customer', 11)
 --remove DOM
 EXEC sys.sp_xml_removedocument @DocHandle;
 GO
+
+DECLARE @x AS XML;
+SET @x = N'
+<root>
+    <a>1<c>3</c><d>4</d></a>
+    <b>2</b>
+</root>';
+SElECT
+     @x.query('*') AS CompleteSequence
+    ,@x.query('data(*)') AS CompleteData
+    ,@x.query('data(root/a/c)') AS Element_c_Data;
